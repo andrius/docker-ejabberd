@@ -1,5 +1,6 @@
-FROM ubuntu:14.04
-MAINTAINER Rafael Römhild <rafael@roemhild.de>
+FROM debian:wheezy
+MAINTAINER Andrius Kairiukstis <andrius@kairiukstis.com>
+# MAINTAINER Rafael Römhild <rafael@roemhild.de>
 
 ENV HOME /opt/ejabberd
 ENV EJABBERD_VERSION 14.07
@@ -13,14 +14,21 @@ RUN groupadd -r ejabberd \
        -s /usr/sbin/nologin \
        ejabberd
 
-# Install erlang and requirements
-RUN apt-get update && apt-get -y install \
+RUN sed -i "s/# deb-src http/deb-src http/g" /etc/apt/sources.list \
+&& echo "APT::Install-Recommends "false";" > /etc/apt/apt.conf \
+&& echo "APT::Install-Suggests "false";" >> /etc/apt/apt.conf \
+
+&& apt-get update && apt-get -y install \
+        procps \
         wget \
         libexpat1 \
         erlang-nox \
         libyaml-0-2 \
         python-jinja2 \
-    && rm -rf /var/lib/apt/lists/*
+
+&& apt-get --yes autoremove \
+&& apt-get clean all \
+&& rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Install as user
 USER ejabberd
